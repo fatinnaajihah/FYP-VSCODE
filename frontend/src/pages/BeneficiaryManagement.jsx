@@ -21,11 +21,18 @@ const INCOME_CATS = [
   { value: 'vulnerable',   label: 'Vulnerable (RM2,001–RM4,850)' },
 ]
 
+const EMPLOYMENT_STATUSES = [
+  { value: 'unemployed',      label: 'Unemployed' },
+  { value: 'informal_sector', label: 'Informal Sector (odd jobs, hawker, daily wage)' },
+  { value: 'employed',        label: 'Employed (formal/permanent)' },
+]
+
 const EMPTY_FORM = {
   name: '', ic_number: '', address: '', district: 'george_town',
   latitude: '', longitude: '', monthly_income: '',
   income_category: 'poor', household_size: '',
   has_oku: false, has_elderly: false, has_infant: false,
+  employment_status: 'employed', num_children: 0, is_single_parent: false,
 }
 
 function incomeBadge(cat) {
@@ -80,6 +87,9 @@ export default function BeneficiaryManagement() {
       monthly_income: b.monthly_income, income_category: b.income_category,
       household_size: b.household_size,
       has_oku: b.has_oku, has_elderly: b.has_elderly, has_infant: b.has_infant,
+      employment_status: b.employment_status ?? 'employed',
+      num_children: b.num_children ?? 0,
+      is_single_parent: b.is_single_parent ?? false,
     })
     setFormError('')
     setShowModal(true)
@@ -297,7 +307,7 @@ export default function BeneficiaryManagement() {
                     <input type="number" step="any" value={form.longitude} onChange={set('longitude')} placeholder="e.g. 100.3296" required />
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 24 }}>
+                <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
                   <label className="checkbox-row">
                     <input type="checkbox" checked={form.has_oku} onChange={set('has_oku')} />
                     Has OKU member
@@ -310,6 +320,22 @@ export default function BeneficiaryManagement() {
                     <input type="checkbox" checked={form.has_infant} onChange={set('has_infant')} />
                     Has Infant (&lt;5 yrs)
                   </label>
+                  <label className="checkbox-row">
+                    <input type="checkbox" checked={form.is_single_parent} onChange={set('is_single_parent')} />
+                    Single-Parent Household
+                  </label>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Employment Status *</label>
+                    <select value={form.employment_status} onChange={set('employment_status')}>
+                      {EMPLOYMENT_STATUSES.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Children under 18</label>
+                    <input type="number" min="0" max="20" value={form.num_children} onChange={set('num_children')} />
+                  </div>
                 </div>
               </div>
               <div className="modal-footer">

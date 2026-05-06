@@ -9,7 +9,7 @@ function incomeBadge(cat) {
 
 export default function PriorityScoring() {
   const [criteria, setCriteria]       = useState(null)
-  const [weights, setWeights]         = useState({ income_weight: 40, household_size_weight: 25, oku_weight: 20, elderly_weight: 10, infant_weight: 5 })
+  const [weights, setWeights]         = useState({ income_weight: 33, employment_weight: 12, household_size_weight: 13, children_weight: 8, oku_weight: 14, elderly_weight: 8, infant_weight: 7, single_parent_weight: 5 })
   const [households, setHouseholds]   = useState([])
   const [loading, setLoading]         = useState(true)
   const [saving, setSaving]           = useState(false)
@@ -28,10 +28,13 @@ export default function PriorityScoring() {
         setCriteria(c)
         setWeights({
           income_weight: c.income_weight,
+          employment_weight: c.employment_weight,
           household_size_weight: c.household_size_weight,
+          children_weight: c.children_weight,
           oku_weight: c.oku_weight,
           elderly_weight: c.elderly_weight,
           infant_weight: c.infant_weight,
+          single_parent_weight: c.single_parent_weight,
         })
       }
       setHouseholds(hRes.data)
@@ -85,11 +88,14 @@ export default function PriorityScoring() {
   const setW = (field) => (e) => setWeights(w => ({ ...w, [field]: Number(e.target.value) }))
 
   const WEIGHT_FIELDS = [
-    { key: 'income_weight',          label: 'Income Category',   color: '#ef4444' },
-    { key: 'household_size_weight',  label: 'Household Size',    color: '#f59e0b' },
-    { key: 'oku_weight',             label: 'OKU Member',        color: '#8b5cf6' },
-    { key: 'elderly_weight',         label: 'Elderly Dependent', color: '#3b82f6' },
-    { key: 'infant_weight',          label: 'Infant / Child',    color: '#10b981' },
+    { key: 'income_weight',          label: 'Income Category',        color: '#ef4444' },
+    { key: 'employment_weight',      label: 'Employment Status',      color: '#f97316' },
+    { key: 'household_size_weight',  label: 'Household Size',         color: '#f59e0b' },
+    { key: 'children_weight',        label: 'Children under 18',      color: '#eab308' },
+    { key: 'oku_weight',             label: 'OKU Member',             color: '#8b5cf6' },
+    { key: 'elderly_weight',         label: 'Elderly Dependent',      color: '#3b82f6' },
+    { key: 'infant_weight',          label: 'Infant (< 5 yrs)',       color: '#10b981' },
+    { key: 'single_parent_weight',   label: 'Single-Parent Household',color: '#0891b2' },
   ]
 
   if (loading) return <div className="page"><div className="spinner-wrap"><div className="spinner" /><span>Loading…</span></div></div>

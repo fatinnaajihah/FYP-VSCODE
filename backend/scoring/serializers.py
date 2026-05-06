@@ -14,6 +14,9 @@ class PriorityCriteriaSerializer(serializers.ModelSerializer):
             + data.get('oku_weight', 0)
             + data.get('elderly_weight', 0)
             + data.get('infant_weight', 0)
+            + data.get('employment_weight', 0)
+            + data.get('children_weight', 0)
+            + data.get('single_parent_weight', 0)
         )
         if abs(total - 100.0) > 0.01:
             raise serializers.ValidationError(

@@ -19,6 +19,12 @@ class Beneficiary(models.Model):
         ('tanjung_bungah', 'Tanjung Bungah'),
     ]
 
+    EMPLOYMENT_CHOICES = [
+        ('unemployed',      'Unemployed'),
+        ('informal_sector', 'Informal Sector (odd jobs, hawker, daily wage)'),
+        ('employed',        'Employed (formal/permanent)'),
+    ]
+
     name = models.CharField(max_length=200)
     ic_number = models.CharField(max_length=20, unique=True)
     address = models.TextField()
@@ -31,6 +37,17 @@ class Beneficiary(models.Model):
     has_oku = models.BooleanField(default=False)
     has_elderly = models.BooleanField(default=False)
     has_infant = models.BooleanField(default=False)
+
+    # ── New indicators (Malaysia MPI + WFP VAM + JKM) ──────────────────────
+    # WFP Coping Strategy Index + MPI Living Standards dimension
+    employment_status = models.CharField(
+        max_length=20, choices=EMPLOYMENT_CHOICES, default='employed'
+    )
+    # WFP Dependency Ratio — children under 18 in household
+    num_children = models.PositiveIntegerField(default=0)
+    # JKM eligibility criterion — single-income household with children
+    is_single_parent = models.BooleanField(default=False)
+
     priority_score = models.FloatField(default=0.0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

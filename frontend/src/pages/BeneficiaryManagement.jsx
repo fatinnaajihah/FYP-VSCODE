@@ -15,6 +15,17 @@ const DISTRICTS = [
   { value: 'tanjung_bungah',label: 'Tanjung Bungah' },
 ]
 
+const DISTRICT_COORDS = {
+  george_town:    { lat: 5.4141,  lng: 100.3296 },
+  bayan_lepas:    { lat: 5.2835,  lng: 100.2614 },
+  butterworth:    { lat: 5.3992,  lng: 100.3638 },
+  seberang_perai: { lat: 5.4875,  lng: 100.4006 },
+  balik_pulau:    { lat: 5.1667,  lng: 100.2333 },
+  air_itam:       { lat: 5.3784,  lng: 100.2950 },
+  jelutong:       { lat: 5.3840,  lng: 100.3098 },
+  tanjung_bungah: { lat: 5.4665,  lng: 100.3000 },
+}
+
 const INCOME_CATS = [
   { value: 'extreme_poor', label: 'Extreme Poor (< RM1,000)' },
   { value: 'poor',         label: 'Poor (RM1,000–RM2,000)' },
@@ -29,7 +40,8 @@ const EMPLOYMENT_STATUSES = [
 
 const EMPTY_FORM = {
   name: '', ic_number: '', address: '', district: 'george_town',
-  latitude: '', longitude: '', monthly_income: '',
+  latitude: DISTRICT_COORDS.george_town.lat, longitude: DISTRICT_COORDS.george_town.lng,
+  monthly_income: '',
   income_category: 'poor', household_size: '',
   has_oku: false, has_elderly: false, has_infant: false,
   employment_status: 'employed', num_children: 0, is_single_parent: false,
@@ -81,9 +93,11 @@ export default function BeneficiaryManagement() {
 
   function openEdit(b) {
     setEditing(b)
+    const coords = DISTRICT_COORDS[b.district] || DISTRICT_COORDS.george_town
     setForm({
       name: b.name, ic_number: b.ic_number, address: b.address,
-      district: b.district, latitude: b.latitude, longitude: b.longitude,
+      district: b.district,
+      latitude: b.latitude || coords.lat, longitude: b.longitude || coords.lng,
       monthly_income: b.monthly_income, income_category: b.income_category,
       household_size: b.household_size,
       has_oku: b.has_oku, has_elderly: b.has_elderly, has_infant: b.has_infant,
@@ -276,7 +290,11 @@ export default function BeneficiaryManagement() {
                 <div className="form-row">
                   <div className="form-group">
                     <label>District *</label>
-                    <select value={form.district} onChange={set('district')}>
+                    <select value={form.district} onChange={e => {
+                      const d = e.target.value
+                      const coords = DISTRICT_COORDS[d] || DISTRICT_COORDS.george_town
+                      setForm(f => ({ ...f, district: d, latitude: coords.lat, longitude: coords.lng }))
+                    }}>
                       {DISTRICTS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
                     </select>
                   </div>
@@ -295,16 +313,6 @@ export default function BeneficiaryManagement() {
                   <div className="form-group">
                     <label>Household Size *</label>
                     <input type="number" value={form.household_size} onChange={set('household_size')} min="1" required />
-                  </div>
-                </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Latitude</label>
-                    <input type="number" step="any" value={form.latitude} onChange={set('latitude')} placeholder="e.g. 5.4141" required />
-                  </div>
-                  <div className="form-group">
-                    <label>Longitude</label>
-                    <input type="number" step="any" value={form.longitude} onChange={set('longitude')} placeholder="e.g. 100.3296" required />
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>

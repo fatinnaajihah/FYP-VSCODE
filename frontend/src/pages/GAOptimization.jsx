@@ -125,26 +125,34 @@ export default function GAOptimization() {
                   <input type="number" min="1" max="20" value={params.max_per_household} onChange={set('max_per_household')} />
                 </div>
                 <div className="form-group">
-                  <label>Number of Generations</label>
-                  <input type="number" min="10" max="1000" value={params.num_generations} onChange={set('num_generations')} />
-                </div>
-                <div className="form-group">
-                  <label>Population Size</label>
-                  <input type="number" min="10" max="200" value={params.population_size} onChange={set('population_size')} />
-                </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Crossover Rate</label>
-                    <input type="number" step="0.01" min="0" max="1" value={params.crossover_rate} onChange={set('crossover_rate')} />
+                  <label>Run Mode</label>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                    {[{ label: 'Quick (100 gen)', value: 100 }, { label: 'Deep (500 gen)', value: 500 }].map(({ label, value }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setParams(p => ({ ...p, num_generations: value }))}
+                        style={{
+                          flex: 1, padding: '8px 0', borderRadius: 6, cursor: 'pointer', fontSize: 13,
+                          border: `2px solid ${params.num_generations === value ? '#1e40af' : '#e2e8f0'}`,
+                          background: params.num_generations === value ? '#eff6ff' : '#fff',
+                          color: params.num_generations === value ? '#1e40af' : '#64748b',
+                          fontWeight: params.num_generations === value ? 700 : 400,
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
-                  <div className="form-group">
-                    <label>Mutation Rate</label>
-                    <input type="number" step="0.01" min="0" max="1" value={params.mutation_rate} onChange={set('mutation_rate')} />
-                  </div>
                 </div>
-                <div className="form-group">
-                  <label>Elitism Count</label>
-                  <input type="number" min="0" max="10" value={params.elitism_count} onChange={set('elitism_count')} />
+                <div style={{ background: '#f8fafc', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: 12, color: '#64748b' }}>
+                  <div style={{ fontWeight: 600, marginBottom: 4, color: '#475569' }}>Optimised Configuration (fixed)</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 12px' }}>
+                    <span>Population size: <strong>50</strong></span>
+                    <span>Crossover rate: <strong>0.80</strong></span>
+                    <span>Mutation rate: <strong>0.10</strong></span>
+                    <span>Elitism count: <strong>2</strong></span>
+                  </div>
                 </div>
                 <button type="submit" className="btn btn-primary" disabled={running} style={{ width: '100%', marginBottom: 10 }}>
                   {running ? '⏳ Running GA…' : '▶ Run GA'}

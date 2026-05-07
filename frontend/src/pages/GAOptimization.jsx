@@ -315,7 +315,6 @@ export default function GAOptimization() {
             <div style={{ textAlign: 'center', padding: 60, color: '#64748b' }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>🧬</div>
               <div style={{ fontSize: 16, fontWeight: 600 }}>Configure parameters and click <strong>Run GA</strong></div>
-              <div style={{ marginTop: 8 }}>Or use <strong>Compare 100 vs 500 Generations</strong> for your report analysis.</div>
             </div>
           )}
         </div>

@@ -28,12 +28,12 @@ export default function Navbar() {
       <button
         onClick={logout}
         style={{
-          marginLeft: 'auto', background: 'transparent', border: '1.5px solid #bfdbfe',
-          color: '#bfdbfe', borderRadius: 6, padding: '6px 14px', cursor: 'pointer',
+          marginLeft: 'auto', background: 'transparent', border: '1.5px solid rgba(196,181,253,.5)',
+          color: '#c4b5fd', borderRadius: 6, padding: '6px 14px', cursor: 'pointer',
           fontSize: 13, fontWeight: 600, transition: 'all .15s',
         }}
-        onMouseEnter={e => { e.target.style.background = 'rgba(255,255,255,.15)'; e.target.style.color = '#fff' }}
-        onMouseLeave={e => { e.target.style.background = 'transparent'; e.target.style.color = '#bfdbfe' }}
+        onMouseEnter={e => { e.target.style.background = 'rgba(255,255,255,.15)'; e.target.style.color = '#fff'; e.target.style.borderColor = 'rgba(255,255,255,.4)' }}
+        onMouseLeave={e => { e.target.style.background = 'transparent'; e.target.style.color = '#c4b5fd'; e.target.style.borderColor = 'rgba(196,181,253,.5)' }}
       >
         Logout
       </button>

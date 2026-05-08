@@ -186,15 +186,15 @@ export default function BeneficiaryManagement() {
 
       {/* Toolbar */}
       <div className="toolbar">
-        <select value={filterDistrict} onChange={e => setFilterDistrict(e.target.value)} style={{ width: 180 }}>
-          <option value="">All Districts</option>
-          {DISTRICTS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
-        </select>
-        <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} style={{ width: 200 }}>
-          <option value="">All Categories</option>
-          {INCOME_CATS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-        </select>
-        <div className="toolbar-right">
+        <div className="toolbar-right" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <select value={filterDistrict} onChange={e => setFilterDistrict(e.target.value)} style={{ width: 180 }}>
+            <option value="">All Districts</option>
+            {DISTRICTS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+          </select>
+          <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} style={{ width: 200 }}>
+            <option value="">All Categories</option>
+            {INCOME_CATS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </select>
           <button className="btn btn-primary" onClick={openAdd}>+ Add Household</button>
         </div>
       </div>

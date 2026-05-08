@@ -4,27 +4,27 @@ import { login } from '../api/api'
 const css = `
   .login-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #0f0c29 0%, #302b63 45%, #1a1040 100%);
+    background: linear-gradient(135deg, #0c4a6e 0%, #075985 50%, #164e63 100%);
     display: flex; align-items: center; justify-content: center;
     overflow: hidden; position: relative;
   }
   .login-blob {
     position: absolute; border-radius: 50%; pointer-events: none;
-    filter: blur(70px); opacity: 0.55;
+    filter: blur(80px); opacity: 0.4;
   }
   .login-card {
     width: 100%; max-width: 420px; padding: 44px 40px;
-    background: rgba(255,255,255,0.07);
-    backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
-    border-radius: 22px; border: 1px solid rgba(255,255,255,0.13);
-    box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border-radius: 22px; border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
     position: relative; z-index: 1; margin: 20px;
   }
   .login-input {
     width: 100% !important;
     padding: 11px 14px !important;
-    background: rgba(255,255,255,0.07) !important;
-    border: 1.5px solid rgba(255,255,255,0.13) !important;
+    background: rgba(255,255,255,0.08) !important;
+    border: 1.5px solid rgba(255,255,255,0.15) !important;
     border-radius: 10px !important;
     font-size: 13px !important;
     color: #fff !important;
@@ -33,22 +33,22 @@ const css = `
     box-sizing: border-box !important;
   }
   .login-input:focus {
-    border-color: rgba(167,139,250,0.85) !important;
-    background: rgba(255,255,255,0.10) !important;
+    border-color: rgba(125,211,252,0.85) !important;
+    background: rgba(255,255,255,0.12) !important;
   }
-  .login-input::placeholder { color: rgba(255,255,255,0.28); }
+  .login-input::placeholder { color: rgba(255,255,255,0.3); }
   .login-btn {
     width: 100%; padding: 12px 0;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    background: linear-gradient(135deg, #0369a1 0%, #0891b2 100%);
     border: none; border-radius: 11px;
     color: #fff; font-size: 14px; font-weight: 700;
     cursor: pointer; letter-spacing: 0.3px;
-    box-shadow: 0 4px 18px rgba(99,102,241,0.45);
+    box-shadow: 0 4px 18px rgba(3,105,161,0.5);
     transition: opacity .15s, transform .12s, box-shadow .15s;
   }
   .login-btn:hover:not(:disabled) {
     opacity: 0.92; transform: translateY(-1px);
-    box-shadow: 0 7px 22px rgba(99,102,241,0.55);
+    box-shadow: 0 7px 22px rgba(3,105,161,0.6);
   }
   .login-btn:disabled { opacity: 0.45; cursor: not-allowed; }
   .login-divider {
@@ -90,19 +90,19 @@ export default function Login() {
 
         {/* Background blobs */}
         <div className="login-blob" style={{
-          width: 480, height: 480,
-          background: 'radial-gradient(circle, #7c3aed 0%, transparent 70%)',
-          top: '-160px', left: '-160px',
+          width: 500, height: 500,
+          background: 'radial-gradient(circle, #0369a1 0%, transparent 70%)',
+          top: '-200px', left: '-150px',
         }} />
         <div className="login-blob" style={{
-          width: 360, height: 360,
-          background: 'radial-gradient(circle, #4f46e5 0%, transparent 70%)',
-          bottom: '-80px', right: '-80px',
+          width: 400, height: 400,
+          background: 'radial-gradient(circle, #0891b2 0%, transparent 70%)',
+          bottom: '-120px', right: '-120px',
         }} />
         <div className="login-blob" style={{
-          width: 220, height: 220,
-          background: 'radial-gradient(circle, #a78bfa 0%, transparent 70%)',
-          top: '55%', right: '10%',
+          width: 260, height: 260,
+          background: 'radial-gradient(circle, #22d3ee 0%, transparent 70%)',
+          top: '45%', right: '5%',
         }} />
 
         <div className="login-card">
@@ -111,19 +111,24 @@ export default function Login() {
           <div style={{ textAlign: 'center', marginBottom: 30 }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              width: 58, height: 58, borderRadius: 16, marginBottom: 16,
-              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-              boxShadow: '0 8px 24px rgba(99,102,241,0.5)',
+              width: 62, height: 62, borderRadius: 18, marginBottom: 16,
+              background: 'linear-gradient(135deg, #0369a1 0%, #0891b2 100%)',
+              boxShadow: '0 8px 28px rgba(3,105,161,0.55)',
             }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                <path d="M12 3C8.5 3 5 6 5 10c0 2.8 1.6 5.2 4 6.5V20h6v-3.5c2.4-1.3 4-3.7 4-6.5 0-4-3.5-7-7-7z" fill="rgba(255,255,255,0.9)"/>
-                <path d="M10 20h4v1.5a.5.5 0 01-.5.5h-3a.5.5 0 01-.5-.5V20z" fill="rgba(255,255,255,0.6)"/>
+              {/* Bowl + Heart — food aid / NutriAid */}
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                {/* Heart (care/aid) */}
+                <path d="M12 9.5 C12 9.5 7.5 6.5 7.5 4.2 C7.5 2.8 8.9 2.3 9.8 2.8 C10.7 3.3 12 5.2 12 5.2 C12 5.2 13.3 3.3 14.2 2.8 C15.1 2.3 16.5 2.8 16.5 4.2 C16.5 6.5 12 9.5 12 9.5Z" fill="rgba(255,255,255,0.95)"/>
+                {/* Bowl (food/nutrition) */}
+                <path d="M4 13 Q4 19.5 12 19.5 Q20 19.5 20 13 Z" fill="rgba(255,255,255,0.88)"/>
+                {/* Bowl base */}
+                <rect x="9" y="19" width="6" height="1.8" rx="0.9" fill="rgba(255,255,255,0.5)"/>
               </svg>
             </div>
 
             <div style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', lineHeight: 1 }}>
-              Nutri<span style={{ color: '#a78bfa' }}>Aid</span>
-              <span style={{ color: '#818cf8', fontSize: 20, fontWeight: 700 }}>4B40</span>
+              Nutri<span style={{ color: '#7dd3fc' }}>Aid</span>
+              <span style={{ color: '#a5f3fc', fontSize: 20, fontWeight: 700 }}>4B40</span>
             </div>
             <div style={{
               color: 'rgba(255,255,255,0.45)', marginTop: 7, fontSize: 11,
@@ -133,7 +138,7 @@ export default function Login() {
             </div>
             <div style={{
               width: 36, height: 3, margin: '14px auto 0',
-              background: 'linear-gradient(to right, #6366f1, #a78bfa)',
+              background: 'linear-gradient(to right, #0369a1, #22d3ee)',
               borderRadius: 99,
             }} />
           </div>

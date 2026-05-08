@@ -1,5 +1,10 @@
 import { NavLink } from 'react-router-dom'
 
+function logout() {
+  localStorage.removeItem('authToken')
+  window.location.href = '/login'
+}
+
 export default function Navbar() {
   return (
     <nav className="navbar">
@@ -20,6 +25,18 @@ export default function Navbar() {
           Results & Analysis
         </NavLink>
       </div>
+      <button
+        onClick={logout}
+        style={{
+          marginLeft: 'auto', background: 'transparent', border: '1.5px solid #bfdbfe',
+          color: '#bfdbfe', borderRadius: 6, padding: '6px 14px', cursor: 'pointer',
+          fontSize: 13, fontWeight: 600, transition: 'all .15s',
+        }}
+        onMouseEnter={e => { e.target.style.background = 'rgba(255,255,255,.15)'; e.target.style.color = '#fff' }}
+        onMouseLeave={e => { e.target.style.background = 'transparent'; e.target.style.color = '#bfdbfe' }}
+      >
+        Logout
+      </button>
     </nav>
   )
 }

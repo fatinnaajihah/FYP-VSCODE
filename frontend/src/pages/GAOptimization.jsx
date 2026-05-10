@@ -37,7 +37,10 @@ export default function GAOptimization() {
     getRuns().then(r => setHistory(r.data.results ?? r.data)).catch(() => {})
   }, [])
 
-  const set = (field) => (e) => setParams(p => ({ ...p, [field]: Number(e.target.value) }))
+  const set = (field) => (e) => {
+    const val = e.target.value
+    setParams(p => ({ ...p, [field]: val === '' ? '' : Number(val) }))
+  }
 
   async function handleRun(e) {
     e.preventDefault()
@@ -118,11 +121,11 @@ export default function GAOptimization() {
               <form onSubmit={handleRun}>
                 <div className="form-group">
                   <label>Total Food Packages</label>
-                  <input type="number" min="1" value={params.total_food_packages} onChange={set('total_food_packages')} />
+                  <input type="text" inputMode="numeric" pattern="[0-9]*" value={params.total_food_packages} onChange={set('total_food_packages')} onFocus={e => e.target.select()} />
                 </div>
                 <div className="form-group">
                   <label>Max Packages per Household</label>
-                  <input type="number" min="1" max="20" value={params.max_per_household} onChange={set('max_per_household')} />
+                  <input type="text" inputMode="numeric" pattern="[0-9]*" value={params.max_per_household} onChange={set('max_per_household')} onFocus={e => e.target.select()} />
                 </div>
                 <div className="form-group">
                   <label>Run Mode</label>

@@ -219,7 +219,6 @@ export default function BeneficiaryManagement() {
                     <th>OKU</th>
                     <th>Elderly</th>
                     <th>Infant</th>
-                    <th>Priority Score</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -236,16 +235,6 @@ export default function BeneficiaryManagement() {
                       <td style={{ textAlign: 'center' }}>{b.has_oku ? '✔' : '–'}</td>
                       <td style={{ textAlign: 'center' }}>{b.has_elderly ? '✔' : '–'}</td>
                       <td style={{ textAlign: 'center' }}>{b.has_infant ? '✔' : '–'}</td>
-                      <td>
-                        <div className="score-bar-wrap">
-                          <div className="score-bar">
-                            <div className="score-fill" style={{ width: `${b.priority_score}%` }} />
-                          </div>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: '#1e40af', minWidth: 32 }}>
-                            {b.priority_score}
-                          </span>
-                        </div>
-                      </td>
                       <td>
                         <button className="btn btn-outline btn-sm" onClick={() => openEdit(b)} style={{ marginRight: 6 }}>Edit</button>
                         <button className="btn btn-danger btn-sm" onClick={() => handleDelete(b.id)}>Del</button>

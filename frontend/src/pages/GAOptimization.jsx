@@ -24,14 +24,27 @@ function MetricBox({ label, value, unit = '' }) {
   )
 }
 
+function loadParams() {
+  try {
+    const stored = localStorage.getItem('ga_params')
+    return stored ? { ...DEFAULT_PARAMS, ...JSON.parse(stored) } : DEFAULT_PARAMS
+  } catch {
+    return DEFAULT_PARAMS
+  }
+}
+
 export default function GAOptimization() {
-  const [params, setParams] = useState(DEFAULT_PARAMS)
+  const [params, setParams] = useState(loadParams)
   const [running, setRunning]       = useState(false)
   const [comparing, setComparing]   = useState(false)
   const [error, setError]           = useState('')
   const [result, setResult]         = useState(null)
   const [compareResult, setCompareResult] = useState(null)
   const [history, setHistory]       = useState([])
+
+  useEffect(() => {
+    localStorage.setItem('ga_params', JSON.stringify(params))
+  }, [params])
 
   useEffect(() => {
     getRuns().then(r => setHistory(r.data.results ?? r.data)).catch(() => {})

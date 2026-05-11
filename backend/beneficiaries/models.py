@@ -53,7 +53,7 @@ class Beneficiary(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-priority_score']
+        ordering = ['name']
 
     def __str__(self):
         return f"{self.name} ({self.district})"

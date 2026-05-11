@@ -124,18 +124,29 @@ def swap_mutation(chrom: List[int], rate: float) -> List[int]:
 
 
 def repair(chrom: List[int], total_packages: int, max_per_hh: int) -> List[int]:
-    """Clamp values and trim total if crossover pushed it over budget."""
+    """Clamp values, trim over-budget, and fill unused capacity to unserved households."""
     c = [min(v, max_per_hh) for v in chrom]
-    excess = sum(c) - total_packages
-    if excess > 0:
+    diff = sum(c) - total_packages
+    if diff > 0:
+        # trim over-budget: reduce random served households
         idxs = [i for i in range(len(c)) if c[i] > 0]
         random.shuffle(idxs)
         for i in idxs:
-            if excess <= 0:
+            if diff <= 0:
                 break
-            cut = min(c[i], excess)
+            cut = min(c[i], diff)
             c[i] -= cut
-            excess -= cut
+            diff -= cut
+    elif diff < 0:
+        # fill under-budget: give 1 package to unserved households until budget is used
+        remaining = -diff
+        idxs = [i for i in range(len(c)) if c[i] == 0]
+        random.shuffle(idxs)
+        for i in idxs:
+            if remaining <= 0:
+                break
+            c[i] = 1
+            remaining -= 1
     return c
 
 

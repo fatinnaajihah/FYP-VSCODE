@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { executeRun, compareRuns, getRuns, getMetrics } from '../api/api'
+import { executeRun, getMetrics } from '../api/api'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer
@@ -42,20 +42,26 @@ const RUN_MODES = [
 export default function GAOptimization() {
   const [params, setParams] = useState(loadParams)
   const [running, setRunning]       = useState(false)
-  const [activeMode, setActiveMode] = useState(null)
-  const [comparing, setComparing]   = useState(false)
+  const [activeMode, setActiveMode] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('ga_last_result')
+      return stored ? JSON.parse(stored)?.run_mode ?? null : null
+    } catch { return null }
+  })
   const [error, setError]           = useState('')
-  const [result, setResult]         = useState(null)
-  const [compareResult, setCompareResult] = useState(null)
-  const [history, setHistory]       = useState([])
-
+  const [result, setResult]         = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('ga_last_result')
+      return stored ? JSON.parse(stored) : null
+    } catch { return null }
+  })
   useEffect(() => {
     localStorage.setItem('ga_params', JSON.stringify(params))
   }, [params])
 
   useEffect(() => {
-    getRuns().then(r => setHistory(r.data.results ?? r.data)).catch(() => {})
-  }, [])
+    if (result) sessionStorage.setItem('ga_last_result', JSON.stringify(result))
+  }, [result])
 
   const set = (field) => (e) => {
     const val = e.target.value
@@ -67,37 +73,16 @@ export default function GAOptimization() {
     setActiveMode(mode)
     setError('')
     setResult(null)
-    setCompareResult(null)
     try {
       const res = await executeRun({ ...params, run_mode: mode })
       const runData = res.data
       const mRes = await getMetrics(runData.id)
       runData.metrics = mRes.data.results ?? mRes.data
       setResult(runData)
-      const runs = await getRuns()
-      setHistory(runs.data.results ?? runs.data)
     } catch (err) {
       setError(err.response?.data?.error ?? 'Run failed.')
     } finally {
       setRunning(false)
-    }
-  }
-
-  async function handleCompare() {
-    setComparing(true)
-    setError('')
-    setResult(null)
-    setCompareResult(null)
-    try {
-      const res = await compareRuns({
-        total_food_packages: params.total_food_packages,
-        population_size: params.population_size,
-      })
-      setCompareResult(res.data)
-    } catch (err) {
-      setError(err.response?.data?.error ?? 'Comparison failed.')
-    } finally {
-      setComparing(false)
     }
   }
 
@@ -111,19 +96,6 @@ export default function GAOptimization() {
     gini: m.gini_coefficient,
     coverage: m.coverage_rate,
   })) ?? []
-
-  // For compare chart: overlay 100 and 500 gen lines
-  const compareChartData = (() => {
-    if (!compareResult) return []
-    const m100 = compareResult['100']?.generation_metrics ?? []
-    const m500 = compareResult['500']?.generation_metrics ?? []
-    const maxLen = Math.max(m100.length, m500.length)
-    return Array.from({ length: maxLen }, (_, i) => ({
-      gen: i + 1,
-      fit100: m100[i]?.best_fitness ?? null,
-      fit500: m500[i]?.best_fitness ?? null,
-    })).filter(d => d.fit100 !== null || d.fit500 !== null)
-  })()
 
   return (
     <div className="page">
@@ -170,12 +142,22 @@ export default function GAOptimization() {
                   </div>
                 </div>
                 <div style={{ background: '#f8fafc', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: 12, color: '#64748b' }}>
-                  <div style={{ fontWeight: 600, marginBottom: 4, color: '#475569' }}>GA Fixed Configuration</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 12px' }}>
-                    <span>Population size: <strong>50</strong></span>
-                    <span>Crossover rate: <strong>0.80</strong></span>
-                    <span>Mutation rate: <strong>0.10</strong></span>
-                    <span>Elitism count: <strong>2</strong></span>
+                  <div style={{ fontWeight: 600, marginBottom: 6, color: '#475569' }}>Fixed Configuration</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <div style={{ background: '#eff6ff', borderRadius: 6, padding: '6px 8px' }}>
+                      <div style={{ fontWeight: 700, color: '#1e40af', marginBottom: 3 }}>GA</div>
+                      <div>Population: <strong>50</strong></div>
+                      <div>Crossover rate: <strong>0.80</strong></div>
+                      <div>Mutation rate: <strong>0.10</strong></div>
+                      <div>Elitism count: <strong>2</strong></div>
+                    </div>
+                    <div style={{ background: '#f5f3ff', borderRadius: 6, padding: '6px 8px' }}>
+                      <div style={{ fontWeight: 700, color: '#7c3aed', marginBottom: 3 }}>SA</div>
+                      <div>Initial temp: <strong>1.0</strong></div>
+                      <div>Min temp: <strong>0.01</strong></div>
+                      <div>Cooling: <strong>Geometric</strong></div>
+                      <div>Neighbour: <strong>Swap</strong></div>
+                    </div>
                   </div>
                 </div>
 
@@ -188,13 +170,13 @@ export default function GAOptimization() {
                         key={mode}
                         type="button"
                         onClick={() => handleRun(mode)}
-                        disabled={running || comparing}
+                        disabled={running}
                         style={{
-                          width: '100%', padding: '10px 16px', borderRadius: 6, cursor: running || comparing ? 'not-allowed' : 'pointer',
+                          width: '100%', padding: '10px 16px', borderRadius: 6, cursor: running ? 'not-allowed' : 'pointer',
                           fontSize: 13, fontWeight: 600, border: `2px solid ${color}`,
                           background: isRunning ? bg : color,
                           color: isRunning ? color : '#fff',
-                          opacity: (running || comparing) && !isRunning ? 0.45 : 1,
+                          opacity: running && !isRunning ? 0.45 : 1,
                           transition: 'opacity 0.15s',
                         }}
                       >
@@ -203,40 +185,10 @@ export default function GAOptimization() {
                     )
                   })}
                 </div>
-
-                <button type="button" className="btn btn-warning" onClick={handleCompare} disabled={comparing || running} style={{ width: '100%' }}>
-                  {comparing ? 'Comparing…' : 'Compare 100 vs 500 Iterations'}
-                </button>
               </div>
             </div>
           </div>
 
-          {/* Run history */}
-          {history.length > 0 && (
-            <div className="card">
-              <div className="card-body" style={{ padding: '16px 0 0' }}>
-                <div style={{ padding: '0 16px', fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Recent Runs</div>
-                <div className="table-wrap">
-                  <table>
-                    <thead>
-                      <tr><th>Gen</th><th>Packages</th><th>Fitness</th><th>Gini</th><th>Coverage</th></tr>
-                    </thead>
-                    <tbody>
-                      {history.slice(0, 8).map(r => (
-                        <tr key={r.id}>
-                          <td>{r.num_generations}</td>
-                          <td>{r.total_food_packages}</td>
-                          <td>{r.best_fitness?.toFixed(4) ?? '–'}</td>
-                          <td>{r.gini_coefficient?.toFixed(4) ?? '–'}</td>
-                          <td>{r.coverage_rate ? (r.coverage_rate * 100).toFixed(1) + '%' : '–'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Results panel */}
@@ -250,15 +202,8 @@ export default function GAOptimization() {
             </div>
           )}
 
-          {comparing && (
-            <div className="spinner-wrap">
-              <div className="spinner" />
-              <span>Running Crossover + Mutation for 100 iterations, then 500 iterations…</span>
-            </div>
-          )}
-
           {/* Single run result */}
-          {result && !compareResult && (
+          {result && (
             <>
               {(() => { const m = RUN_MODES.find(x => x.mode === result.run_mode); return m ? (
                 <div style={{ display: 'inline-block', marginBottom: 14, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: m.bg, color: m.color, border: `1px solid ${m.color}` }}>
@@ -318,60 +263,7 @@ export default function GAOptimization() {
             </>
           )}
 
-          {/* 100 vs 500 comparison */}
-          {compareResult && (
-            <>
-              <div className="alert alert-info">
-                Comparison complete. Both runs used {params.population_size} population size and {params.total_food_packages} food packages.
-              </div>
-
-              {/* Metrics side by side */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 }}>
-                {['100', '500'].map(k => (
-                  <div key={k} className="card">
-                    <div className="card-body">
-                      <div className="card-title" style={{ color: k === '100' ? '#1e40af' : '#7c3aed' }}>
-                        {k} Generations
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                        {[
-                          ['Fitness',     compareResult[k].final_metrics.fitness,              ''],
-                          ['Gini',        compareResult[k].final_metrics.gini,                 ''],
-                          ['Coverage',    compareResult[k].final_metrics.coverage,             '%'],
-                          ['Priority Sat',compareResult[k].final_metrics.priority_satisfaction,'%'],
-                        ].map(([l, v, u]) => (
-                          <div key={l} style={{ background: '#f8fafc', borderRadius: 6, padding: 12 }}>
-                            <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '.4px' }}>{l}</div>
-                            <div style={{ fontSize: 20, fontWeight: 700, color: k === '100' ? '#1e40af' : '#7c3aed' }}>
-                              {u === '%' ? (v * 100).toFixed(1) + '%' : v.toFixed(4)}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Overlay fitness chart */}
-              <div className="chart-card">
-                <div className="chart-title">Best Fitness Convergence: 100 vs 500 Generations</div>
-                <ResponsiveContainer width="100%" height={280}>
-                  <LineChart data={compareChartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="gen" label={{ value: 'Generation', position: 'insideBottom', offset: -2 }} tick={{ fontSize: 11 }} />
-                    <YAxis domain={[0, 1]} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(v) => v?.toFixed(6) ?? 'N/A'} />
-                    <Legend />
-                    <Line type="monotone" dataKey="fit100" name="100 Generations" stroke="#1e40af" dot={false} strokeWidth={2} />
-                    <Line type="monotone" dataKey="fit500" name="500 Generations" stroke="#7c3aed" dot={false} strokeWidth={2} strokeDasharray="5 2" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </>
-          )}
-
-          {!result && !compareResult && !running && !comparing && !error && (
+          {!result && !running && !error && (
             <div style={{ textAlign: 'center', padding: 60, color: '#64748b' }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>🧬</div>
               <div style={{ fontSize: 16, fontWeight: 600 }}>Configure parameters and select an algorithm to run</div>

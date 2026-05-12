@@ -7,6 +7,14 @@ import {
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
+const RUN_MODES = [
+  { mode: 'crossover_only',     label: 'Crossover Only',       color: '#1e40af', bg: '#eff6ff' },
+  { mode: 'crossover_mutation', label: 'Crossover + Mutation', color: '#0f766e', bg: '#f0fdf4' },
+  { mode: 'sa',                 label: 'SA + Mutation',         color: '#7c3aed', bg: '#f5f3ff' },
+]
+
+const getModeInfo = (mode) => RUN_MODES.find(m => m.mode === mode) ?? { label: mode ?? '–', color: '#64748b', bg: '#f8fafc' }
+
 function priorityColor(score) {
   if (score >= 70) return '#ef4444'
   if (score >= 45) return '#f59e0b'
@@ -33,6 +41,7 @@ export default function ResultsAnalysis() {
   const [loading, setLoading]       = useState(true)
   const [loadingRun, setLoadingRun] = useState(false)
   const [error, setError]           = useState('')
+
 
   useEffect(() => {
     getSummary()
@@ -79,6 +88,7 @@ export default function ResultsAnalysis() {
   // Comparison rows for the summary table
   const comparisonRows = summary.map(s => ({
     run_id: s.run_id,
+    run_mode: s.run_mode,
     num_generations: s.num_generations,
     packages: s.total_food_packages,
     fitness: s.best_fitness,
@@ -110,33 +120,42 @@ export default function ResultsAnalysis() {
           {/* Run selector */}
           <div className="toolbar" style={{ marginBottom: 20 }}>
             <label style={{ fontWeight: 600, marginBottom: 0, marginRight: 8 }}>Select Run:</label>
-            <select value={selectedRunId ?? ''} onChange={e => setSelectedRunId(Number(e.target.value))} style={{ width: 280 }}>
+            <select value={selectedRunId ?? ''} onChange={e => setSelectedRunId(Number(e.target.value))} style={{ width: 340 }}>
               {summary.map(s => (
                 <option key={s.run_id} value={s.run_id}>
-                  Run #{s.run_id} — {s.num_generations} gen | {s.total_food_packages} packages | Gini {s.gini_coefficient?.toFixed(3)}
+                  Run #{s.run_id} — {getModeInfo(s.run_mode).label} | {s.num_generations} gen | {s.total_food_packages} pkg | Gini {s.gini_coefficient?.toFixed(3)}
                 </option>
               ))}
             </select>
+            <span style={{ fontSize: 12, color: '#94a3b8', marginLeft: 10 }}>Most recent first</span>
           </div>
 
           {loadingRun ? (
             <div className="spinner-wrap"><div className="spinner" /><span>Loading run…</span></div>
           ) : run && (
             <>
-              {/* Key metrics */}
+              {/* Algorithm badge + key metrics */}
+              {(() => {
+                const m = getModeInfo(run.run_mode)
+                return (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 12, padding: '4px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: m.bg, color: m.color, border: `1px solid ${m.color}` }}>
+                    {m.label}
+                  </div>
+                )
+              })()}
               <div className="metrics-row" style={{ marginBottom: 24 }}>
                 <MetricBox label="Best Fitness"           value={run.best_fitness} />
                 <MetricBox label="Gini Coefficient"       value={run.gini_coefficient} color="#ef4444" />
                 <MetricBox label="Coverage Rate"          value={run.coverage_rate} unit="%" color="#10b981" />
                 <MetricBox label="Priority Satisfaction"  value={run.priority_satisfaction_rate} unit="%" color="#f59e0b" />
-                <MetricBox label="Generations"            value={run.num_generations} color="#7c3aed" />
+                <MetricBox label={run.run_mode === 'sa' ? 'Iterations' : 'Generations'} value={run.num_generations} color="#7c3aed" />
                 <MetricBox label="Food Packages"          value={run.total_food_packages} color="#0891b2" />
               </div>
 
               {/* Convergence + Allocation charts */}
               <div className="charts-grid" style={{ marginBottom: 24 }}>
                 <div className="chart-card">
-                  <div className="chart-title">Fitness Convergence over Generations</div>
+                  <div className="chart-title">Fitness Convergence over {run.run_mode === 'sa' ? 'Iterations' : 'Generations'}</div>
                   <ResponsiveContainer width="100%" height={230}>
                     <LineChart data={convergenceData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -148,7 +167,7 @@ export default function ResultsAnalysis() {
                   </ResponsiveContainer>
                 </div>
                 <div className="chart-card">
-                  <div className="chart-title">Gini Coefficient over Generations</div>
+                  <div className="chart-title">Gini Coefficient over {run.run_mode === 'sa' ? 'Iterations' : 'Generations'}</div>
                   <ResponsiveContainer width="100%" height={230}>
                     <LineChart data={convergenceData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -299,6 +318,7 @@ export default function ResultsAnalysis() {
                   <thead>
                     <tr>
                       <th>Run</th>
+                      <th>Algorithm</th>
                       <th>Generations</th>
                       <th>Packages</th>
                       <th>Best Fitness</th>
@@ -313,6 +333,7 @@ export default function ResultsAnalysis() {
                       <tr key={r.run_id} style={{ cursor: 'pointer', background: r.run_id === selectedRunId ? '#eff6ff' : '' }}
                           onClick={() => setSelectedRunId(r.run_id)}>
                         <td>#{r.run_id}</td>
+                        <td>{(() => { const m = getModeInfo(r.run_mode); return <span style={{ padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: m.bg, color: m.color, border: `1px solid ${m.color}`, whiteSpace: 'nowrap' }}>{m.label}</span> })()}</td>
                         <td style={{ fontWeight: 700 }}>{r.num_generations}</td>
                         <td>{r.packages}</td>
                         <td>{r.fitness?.toFixed(4)}</td>
@@ -327,6 +348,7 @@ export default function ResultsAnalysis() {
               </div>
             </div>
           </div>
+
         </>
       )}
     </div>

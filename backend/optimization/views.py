@@ -108,35 +108,3 @@ class AllocationRunViewSet(viewsets.ModelViewSet):
             run.save(update_fields=['status'])
             return Response({'error': str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=False, methods=['post'])
-    def compare(self, request):
-        """
-        Run GA twice — 100 generations and 500 generations — and return both
-        sets of metrics side-by-side for the analysis comparison chart.
-        """
-        beneficiaries = Beneficiary.objects.all().values('id', 'priority_score')
-        if not beneficiaries:
-            return Response(
-                {'error': 'No beneficiaries found.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        total_packages = int(request.data.get('total_food_packages', 100))
-        pop_size = int(request.data.get('population_size', 50))
-        households = list(beneficiaries)
-
-        results = {}
-        for gens in [100, 500]:
-            r = run_ga(
-                households=households,
-                total_packages=total_packages,
-                num_generations=gens,
-                population_size=pop_size,
-            )
-            results[str(gens)] = {
-                'num_generations': gens,
-                'final_metrics': r['final_metrics'],
-                'generation_metrics': r['generation_metrics'],
-            }
-
-        return Response(results)

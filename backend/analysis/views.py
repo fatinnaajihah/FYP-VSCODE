@@ -25,6 +25,7 @@ class GAGenerationMetricViewSet(viewsets.ReadOnlyModelViewSet):
         for run in runs:
             data.append({
                 'run_id': run.id,
+                'run_mode': run.run_mode,
                 'num_generations': run.num_generations,
                 'population_size': run.population_size,
                 'total_food_packages': run.total_food_packages,

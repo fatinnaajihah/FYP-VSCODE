@@ -34,7 +34,6 @@ export const getRankedHouseholds = () => api.get('/scoring/criteria/ranked_house
 export const getRuns = () => api.get('/optimization/runs/')
 export const getRun = (id) => api.get(`/optimization/runs/${id}/`)
 export const executeRun = (data) => api.post('/optimization/runs/execute/', data)
-export const compareRuns = (data) => api.post('/optimization/runs/compare/', data)
 
 // ── Analysis ─────────────────────────────────────────────────────────────────
 export const getMetrics = (runId) => api.get('/analysis/metrics/', { params: { run_id: runId } })

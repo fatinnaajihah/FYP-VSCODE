@@ -33,9 +33,16 @@ function loadParams() {
   }
 }
 
+const RUN_MODES = [
+  { mode: 'crossover_only',     label: 'Crossover Only',        color: '#1e40af', bg: '#eff6ff' },
+  { mode: 'crossover_mutation', label: 'Crossover + Mutation',  color: '#0f766e', bg: '#f0fdf4' },
+  { mode: 'sa',                 label: 'SA + Mutation',          color: '#7c3aed', bg: '#f5f3ff' },
+]
+
 export default function GAOptimization() {
   const [params, setParams] = useState(loadParams)
   const [running, setRunning]       = useState(false)
+  const [activeMode, setActiveMode] = useState(null)
   const [comparing, setComparing]   = useState(false)
   const [error, setError]           = useState('')
   const [result, setResult]         = useState(null)
@@ -55,23 +62,22 @@ export default function GAOptimization() {
     setParams(p => ({ ...p, [field]: val === '' ? '' : Number(val) }))
   }
 
-  async function handleRun(e) {
-    e.preventDefault()
+  async function handleRun(mode) {
     setRunning(true)
+    setActiveMode(mode)
     setError('')
     setResult(null)
     setCompareResult(null)
     try {
-      const res = await executeRun(params)
+      const res = await executeRun({ ...params, run_mode: mode })
       const runData = res.data
-      // Fetch per-generation metrics for the convergence chart
       const mRes = await getMetrics(runData.id)
       runData.metrics = mRes.data.results ?? mRes.data
       setResult(runData)
       const runs = await getRuns()
       setHistory(runs.data.results ?? runs.data)
     } catch (err) {
-      setError(err.response?.data?.error ?? 'GA run failed.')
+      setError(err.response?.data?.error ?? 'Run failed.')
     } finally {
       setRunning(false)
     }
@@ -96,6 +102,8 @@ export default function GAOptimization() {
   }
 
   // Prepare chart data for a single run
+  const iterLabel = result?.run_mode === 'sa' ? 'Iteration' : 'Generation'
+
   const chartData = result?.metrics?.map(m => ({
     gen: m.generation,
     bestFitness: m.best_fitness,
@@ -121,7 +129,7 @@ export default function GAOptimization() {
     <div className="page">
       <div className="page-header">
         <h1 className="page-title">GA Optimization</h1>
-        <p className="page-subtitle">Configure and run the Genetic Algorithm to generate optimised food aid allocation plans</p>
+        <p className="page-subtitle">Compare Crossover Only, Crossover + Mutation (GA), and Simulated Annealing allocation strategies</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 24, alignItems: 'start' }}>
@@ -130,8 +138,8 @@ export default function GAOptimization() {
         <div>
           <div className="card" style={{ marginBottom: 16 }}>
             <div className="card-body">
-              <div className="card-title">GA Parameters</div>
-              <form onSubmit={handleRun}>
+              <div className="card-title">Parameters</div>
+              <div>
                 <div className="form-group">
                   <label>Total Food Packages</label>
                   <input type="text" inputMode="numeric" pattern="[0-9]*" value={params.total_food_packages} onChange={set('total_food_packages')} onFocus={e => e.target.select()} />
@@ -141,9 +149,9 @@ export default function GAOptimization() {
                   <input type="text" inputMode="numeric" pattern="[0-9]*" value={params.max_per_household} onChange={set('max_per_household')} onFocus={e => e.target.select()} />
                 </div>
                 <div className="form-group">
-                  <label>Run Mode</label>
+                  <label>Iterations</label>
                   <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                    {[{ label: 'Quick (100 gen)', value: 100 }, { label: 'Deep (500 gen)', value: 500 }].map(({ label, value }) => (
+                    {[{ label: 'Quick (100)', value: 100 }, { label: 'Deep (500)', value: 500 }].map(({ label, value }) => (
                       <button
                         key={value}
                         type="button"
@@ -162,7 +170,7 @@ export default function GAOptimization() {
                   </div>
                 </div>
                 <div style={{ background: '#f8fafc', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: 12, color: '#64748b' }}>
-                  <div style={{ fontWeight: 600, marginBottom: 4, color: '#475569' }}>Optimised Configuration (fixed)</div>
+                  <div style={{ fontWeight: 600, marginBottom: 4, color: '#475569' }}>GA Fixed Configuration</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 12px' }}>
                     <span>Population size: <strong>50</strong></span>
                     <span>Crossover rate: <strong>0.80</strong></span>
@@ -170,13 +178,36 @@ export default function GAOptimization() {
                     <span>Elitism count: <strong>2</strong></span>
                   </div>
                 </div>
-                <button type="submit" className="btn btn-primary" disabled={running} style={{ width: '100%', marginBottom: 10 }}>
-                  {running ? '⏳ Running GA…' : '▶ Run GA'}
+
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 8 }}>Select Algorithm</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+                  {RUN_MODES.map(({ mode, label, color, bg }) => {
+                    const isRunning = running && activeMode === mode
+                    return (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => handleRun(mode)}
+                        disabled={running || comparing}
+                        style={{
+                          width: '100%', padding: '10px 16px', borderRadius: 6, cursor: running || comparing ? 'not-allowed' : 'pointer',
+                          fontSize: 13, fontWeight: 600, border: `2px solid ${color}`,
+                          background: isRunning ? bg : color,
+                          color: isRunning ? color : '#fff',
+                          opacity: (running || comparing) && !isRunning ? 0.45 : 1,
+                          transition: 'opacity 0.15s',
+                        }}
+                      >
+                        {isRunning ? `Running ${label}…` : `Run ${label}`}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <button type="button" className="btn btn-warning" onClick={handleCompare} disabled={comparing || running} style={{ width: '100%' }}>
+                  {comparing ? 'Comparing…' : 'Compare 100 vs 500 Iterations'}
                 </button>
-                <button type="button" className="btn btn-warning" onClick={handleCompare} disabled={comparing} style={{ width: '100%' }}>
-                  {comparing ? '⏳ Comparing…' : '⚖ Compare 100 vs 500 Generations'}
-                </button>
-              </form>
+              </div>
             </div>
           </div>
 
@@ -215,20 +246,25 @@ export default function GAOptimization() {
           {running && (
             <div className="spinner-wrap">
               <div className="spinner" />
-              <span>Running GA for {params.num_generations} generations…</span>
+              <span>Running {RUN_MODES.find(m => m.mode === activeMode)?.label} for {params.num_generations} iterations…</span>
             </div>
           )}
 
           {comparing && (
             <div className="spinner-wrap">
               <div className="spinner" />
-              <span>Running GA for 100 generations, then 500 generations…</span>
+              <span>Running Crossover + Mutation for 100 iterations, then 500 iterations…</span>
             </div>
           )}
 
           {/* Single run result */}
           {result && !compareResult && (
             <>
+              {(() => { const m = RUN_MODES.find(x => x.mode === result.run_mode); return m ? (
+                <div style={{ display: 'inline-block', marginBottom: 14, padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, background: m.bg, color: m.color, border: `1px solid ${m.color}` }}>
+                  {m.label}
+                </div>
+              ) : null })()}
               <div className="metrics-row" style={{ marginBottom: 20 }}>
                 <MetricBox label="Best Fitness" value={result.best_fitness} />
                 <MetricBox label="Gini Coefficient" value={result.gini_coefficient} />
@@ -238,11 +274,11 @@ export default function GAOptimization() {
 
               {/* Convergence chart */}
               <div className="chart-card" style={{ marginBottom: 20 }}>
-                <div className="chart-title">Convergence — Best & Average Fitness over Generations</div>
+                <div className="chart-title">Convergence — Best & Average Fitness over {iterLabel}s</div>
                 <ResponsiveContainer width="100%" height={260}>
                   <LineChart data={chartData} margin={{ top: 4, right: 20, bottom: 4, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="gen" label={{ value: 'Generation', position: 'insideBottom', offset: -2 }} tick={{ fontSize: 11 }} />
+                    <XAxis dataKey="gen" label={{ value: iterLabel, position: 'insideBottom', offset: -2 }} tick={{ fontSize: 11 }} />
                     <YAxis domain={[0, 1]} tick={{ fontSize: 11 }} />
                     <Tooltip formatter={(v) => v.toFixed(6)} />
                     <Legend />
@@ -255,7 +291,7 @@ export default function GAOptimization() {
               {/* Gini + coverage charts */}
               <div className="charts-grid">
                 <div className="chart-card">
-                  <div className="chart-title">Gini Coefficient over Generations (lower = fairer)</div>
+                  <div className="chart-title">Gini Coefficient over {iterLabel}s (lower = fairer)</div>
                   <ResponsiveContainer width="100%" height={200}>
                     <LineChart data={chartData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -267,7 +303,7 @@ export default function GAOptimization() {
                   </ResponsiveContainer>
                 </div>
                 <div className="chart-card">
-                  <div className="chart-title">Coverage Rate over Generations</div>
+                  <div className="chart-title">Coverage Rate over {iterLabel}s</div>
                   <ResponsiveContainer width="100%" height={200}>
                     <LineChart data={chartData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -338,7 +374,7 @@ export default function GAOptimization() {
           {!result && !compareResult && !running && !comparing && !error && (
             <div style={{ textAlign: 'center', padding: 60, color: '#64748b' }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>🧬</div>
-              <div style={{ fontSize: 16, fontWeight: 600 }}>Configure parameters and click <strong>Run GA</strong></div>
+              <div style={{ fontSize: 16, fontWeight: 600 }}>Configure parameters and select an algorithm to run</div>
             </div>
           )}
         </div>

@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from .models import AllocationRun, AllocationResult
 from .serializers import AllocationRunSerializer, AllocationRunListSerializer
 from .ga_engine import run_ga
+from .sa_engine import run_sa
 from analysis.models import GAGenerationMetric
 from beneficiaries.models import Beneficiary
 
@@ -40,16 +41,24 @@ class AllocationRunViewSet(viewsets.ModelViewSet):
 
         try:
             households = list(beneficiaries)
-            result = run_ga(
-                households=households,
-                total_packages=run.total_food_packages,
-                num_generations=run.num_generations,
-                population_size=run.population_size,
-                crossover_rate=run.crossover_rate,
-                mutation_rate=run.mutation_rate,
-                elitism_count=run.elitism_count,
-                max_per_household=run.max_per_household,
-            )
+            if run.run_mode == 'sa':
+                result = run_sa(
+                    households=households,
+                    total_packages=run.total_food_packages,
+                    num_iterations=run.num_generations,
+                    max_per_household=run.max_per_household,
+                )
+            else:
+                result = run_ga(
+                    households=households,
+                    total_packages=run.total_food_packages,
+                    num_generations=run.num_generations,
+                    population_size=run.population_size,
+                    crossover_rate=run.crossover_rate,
+                    mutation_rate=0.0 if run.run_mode == 'crossover_only' else run.mutation_rate,
+                    elitism_count=run.elitism_count,
+                    max_per_household=run.max_per_household,
+                )
 
             # Persist per-household allocation results
             AllocationResult.objects.filter(run=run).delete()

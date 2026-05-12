@@ -9,6 +9,12 @@ class AllocationRun(models.Model):
         ('failed', 'Failed'),
     ]
 
+    RUN_MODE_CHOICES = [
+        ('crossover_only', 'Crossover Only'),
+        ('crossover_mutation', 'Crossover + Mutation (GA)'),
+        ('sa', 'Simulated Annealing'),
+    ]
+
     num_generations = models.PositiveIntegerField(default=100)
     population_size = models.PositiveIntegerField(default=50)
     crossover_rate = models.FloatField(default=0.8)
@@ -16,6 +22,7 @@ class AllocationRun(models.Model):
     elitism_count = models.PositiveIntegerField(default=2)
     total_food_packages = models.PositiveIntegerField(default=100)
     max_per_household = models.PositiveIntegerField(default=5)
+    run_mode = models.CharField(max_length=20, choices=RUN_MODE_CHOICES, default='crossover_mutation')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     best_fitness = models.FloatField(null=True, blank=True)
     gini_coefficient = models.FloatField(null=True, blank=True)

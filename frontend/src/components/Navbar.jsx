@@ -25,7 +25,7 @@ export default function Navbar() {
           Priority Scoring
         </NavLink>
         <NavLink to="/optimization" className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}>
-          GA Optimization
+          Algorithm Optimization
         </NavLink>
         <NavLink to="/analysis" className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}>
           Results & Analysis

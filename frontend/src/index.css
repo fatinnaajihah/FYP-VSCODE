@@ -40,7 +40,7 @@ body { min-height: 100vh; }
   height: 60px;
   gap: 32px;
   box-shadow: 0 2px 12px rgba(12,74,110,.4);
-  position: sticky; top: 0; z-index: 100;
+  position: sticky; top: 0; z-index: 1100;
 }
 .navbar-brand {
   font-size: 18px; font-weight: 800; color: var(--white);

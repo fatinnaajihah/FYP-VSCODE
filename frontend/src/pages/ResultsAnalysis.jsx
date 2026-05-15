@@ -113,7 +113,7 @@ export default function ResultsAnalysis() {
         <div style={{ textAlign: 'center', padding: 80, color: '#64748b' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>📊</div>
           <div style={{ fontSize: 16, fontWeight: 600 }}>No completed runs yet.</div>
-          <div>Go to <strong>GA Optimization</strong> and run the algorithm first.</div>
+          <div>Go to <strong>Algorithm Optimization</strong> and run the algorithm first.</div>
         </div>
       ) : (
         <>
@@ -214,6 +214,7 @@ export default function ResultsAnalysis() {
                       <MapContainer
                         center={[5.41, 100.33]}
                         zoom={11}
+                        scrollWheelZoom={false}
                         style={{ height: '100%', width: '100%' }}
                       >
                         <TileLayer

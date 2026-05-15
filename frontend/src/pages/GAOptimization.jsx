@@ -100,7 +100,7 @@ export default function GAOptimization() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">GA Optimization</h1>
+        <h1 className="page-title">Algorithm Optimization</h1>
         <p className="page-subtitle">Compare Crossover Only, Crossover + Mutation (GA), and Simulated Annealing allocation strategies</p>
       </div>
 

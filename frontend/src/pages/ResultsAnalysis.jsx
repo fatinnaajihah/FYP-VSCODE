@@ -4,7 +4,16 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, LineChart, Line, Cell
 } from 'recharts'
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap, useMapEvents } from 'react-leaflet'
+
+function ScrollZoomOnHover() {
+  const map = useMap()
+  useMapEvents({
+    mouseover: () => map.scrollWheelZoom.enable(),
+    mouseout:  () => map.scrollWheelZoom.disable(),
+  })
+  return null
+}
 import 'leaflet/dist/leaflet.css'
 
 const RUN_MODES = [
@@ -217,6 +226,7 @@ export default function ResultsAnalysis() {
                         scrollWheelZoom={false}
                         style={{ height: '100%', width: '100%' }}
                       >
+                        <ScrollZoomOnHover />
                         <TileLayer
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                           attribution='&copy; OpenStreetMap contributors'
